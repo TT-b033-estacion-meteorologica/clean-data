@@ -1,0 +1,167 @@
+identificacion:
+  titulo: Datos Meteorológicos - Estación ESCOM IPN
+  proposito: Proporcionar datos meteorológicos abiertos capturados por la estación automática del campus
+    ESCOM del IPN, para su uso en investigación, educación y proyectos de Open Data.
+  descripcion: Registros meteorológicos automáticos de temperatura, humedad, presión barométrica, viento
+    y precipitación, capturados cada 15 minutos por una estación Davis Vantage Vue y publicados diariamente
+    en formato CSV (un archivo mensual por vista temática).
+  idioma: ES
+  categoria_tema:
+    tema_principal: '3'
+    grupo_datos: '5'
+  palabras_clave:
+  - meteorología
+  - temperatura
+  - humedad
+  - presión barométrica
+  - viento
+  - precipitación
+  - Ciudad de México
+  - Open Data
+  - IPN
+  - ESCOM
+  forma_presentacion: '14'
+  enlace_en_linea:
+    direccion: https://github.com/Estacion-metereologica/clean_data
+    descripcion_acceso: Repositorio GitHub con datos en formato CSV
+  frecuencia_actualizacion: '1'
+  conjunto_caracteres: '5'
+  descripcion_uso: 'Datos disponibles para uso académico, investigación científica y proyectos de visualización
+    meteorológica, sujetos a las limitaciones descritas en calidad.limitaciones_conocidas. Citar la fuente:
+    Estación Meteorológica ESCOM-IPN.'
+  proceso_produccion:
+    programa_informacion: Estación Meteorológica ESCOM-IPN
+    proceso: Captura automática por HTTP y pipeline ELT en Cloud SQL
+    siglas: EM-ESCOM-IPN
+    ciclo: Diario
+  resolucion_temporal: 15 minutos
+  extension_temporal:
+    inicio: '2026-04-19'
+    fin: '2026-10-25'
+fechas:
+  eventos:
+  - tipo: '1'
+    fecha: '2026-04-18'
+  - tipo: '2'
+    fecha: '2026-10-26'
+  - tipo: '3'
+    fecha: '2026-05-15'
+parte_responsable:
+  organizacion: Escuela Superior de Cómputo - IPN
+  domicilio: Av. Juan de Dios Bátiz s/n, GAM, Ciudad de México
+  entidad_federativa: Ciudad de México
+  pais: México
+  enlace_en_linea: https://www.escom.ipn.mx
+  rol: '1'
+localizacion_geografica:
+  coordenadas:
+    limite_oeste: -99.148
+    limite_este: -99.1455
+    limite_sur: 19.5035
+    limite_norte: 19.5057
+  tipo_representacion_espacial: '1'
+sistema_referencia:
+  horizontal:
+    coordenadas_geograficas:
+      unidades: Grados decimales
+    modelo_geodesico:
+      datum_horizontal: ITRF08 época 2010.0
+      elipsoide: GRS80
+calidad:
+  linaje:
+    enunciado: La estación meteorológica registra mediciones cada 15 minutos. Un proceso programado con
+      Cloud Scheduler extrae diariamente (≈12:00 h, hora de la Ciudad de México) los registros del día
+      previo y los almacena sin alteración en la tabla raw_weather_data de Cloud SQL (PostgreSQL). Un
+      servicio de Cloud Run (≈13:00 h) consulta las vistas SQL de limpieza y temáticas y publica los resultados
+      en este repositorio en CSV mensuales.
+  nivel: '3'
+  pasos_proceso:
+    descripcion: '1. Extracción HTTP desde la consola de la estación. 2. Carga sin transformación en raw_weather_data
+      (todos los campos como texto); la restricción de unicidad fecha-hora evita registros duplicados.
+      3. Limpieza mediante la vista vw_clean_weather: valores ''---'' a NULL con NULLIF, conversión de
+      tipos (VARCHAR a NUMERIC, DATE y TIME) y fecha con TO_DATE(''DD:MM:YYYY''). 4. Separación temática
+      en vistas (temperatura y humedad, viento, lluvia y presión). 5. Exportación a CSV mensual en GitHub.'
+    tecnologia:
+      hardware: Google Cloud Run (contenedor on-demand)
+      software: PostgreSQL 14, Python 3.11, Flask, pandas
+    fuentes:
+    - Estación meteorológica Davis Vantage Vue (consola con acceso HTTP)
+    - Cloud SQL PostgreSQL - Google Cloud Platform
+  control_calidad:
+    criterio:
+      completitud:
+        subcriterio: Omisión
+        ambito: Valores faltantes de la estación ('---') representados como NULL
+      consistencia_logica:
+        subcriterio: Consistencia de formato
+        ambito: 'Conversión de tipos: VARCHAR a NUMERIC, DATE y TIME; sin duplicados de fecha-hora'
+    descripcion: 'Los valores ''---'' se convierten a NULL y no se descartan registros. Del 2026-04-19
+      al 2026-10-25: 178 de 190 días con datos (93.7 %) y 16618 de 18240 registros esperados (91.1 %).
+      Se esperan 96 registros por día; la mayoría de los días completos tiene 95 (ver limitaciones).'
+  limitaciones_conocidas:
+  - 'Presión barométrica no homogénea: hasta el 2 de julio de 2026 la consola reportó presión reducida
+    al nivel del mar (≈762–774 mmHg) y desde el 4 de julio presión absoluta de la estación (≈572–582 mmHg);
+    el 3 de julio no hay datos. No se ha aplicado ninguna corrección: analizar los dos periodos por separado.'
+  - La columna presion_hpa (y variacion_hpa) está en mmHg, la unidad configurada en la consola, no en
+    hPa.
+  - Temperatura y humedad relativa se reportan sin decimales (resolución efectiva de 1 °C y 1 %).
+  - El registro de las 00:00 h de cada día no se captura, por lo que la mayoría de los días completos
+    tiene 95 registros en lugar de 96.
+  - 'Hay días sin datos o incompletos: la puesta en marcha (24 de abril al 2 de mayo de 2026) y los días
+    7, 15 y 16 de septiembre de 2026, que no pudieron recuperarse.'
+  - 'Viento: el 65 % de los intervalos registra 0 km/h y el 31 % no tiene dirección (calma); el anemómetro
+    podría estar resguardado, por lo que los datos reflejan la circulación local.'
+  - 'Dirección del viento: en parte de los registros las columnas direccion y direccion_rafaga están intercambiadas
+    (error de ingesta identificado y pendiente de corrección).'
+  - Radiación solar, índice UV y evapotranspiración no están disponibles (sensores no instalados) y no
+    se incluyen en las vistas limpias.
+  - Aún no se aplica en la base de datos la verificación de rangos físicos ni el marcado de valores atípicos;
+    una verificación externa al 18 de octubre de 2026 no encontró valores fuera de rango en temperatura,
+    humedad, precipitación ni viento.
+entidades_atributos:
+  descripcion_general: '5 vistas temáticas en CSV mensual. Cada registro es una medición de 15 minutos.
+    Unidades: temperatura en °C, humedad relativa en %, presión en mmHg, velocidad del viento en km/h,
+    precipitación en mm y tasa de precipitación en mm/h.'
+  entidades:
+  - archivo: AAAA/MM/clean_weather_AAAAMM.csv
+    variables: Todas las variables limpias
+    unidades: Varias
+  - archivo: AAAA/MM/clean_temperatura_AAAAMM.csv
+    variables: temp_exterior, temp_max, temp_min, temp_interior, humedad_exterior, humedad_interior
+    unidades: °C, %
+  - archivo: AAAA/MM/clean_viento_AAAAMM.csv
+    variables: velocidad_kmh, rafaga_kmh, direccion, direccion_rafaga
+    unidades: km/h
+  - archivo: AAAA/MM/clean_lluvia_AAAAMM.csv
+    variables: lluvia_mm, tasa_mm_hr
+    unidades: mm, mm/h
+  - archivo: AAAA/MM/clean_presion_AAAAMM.csv
+    variables: presion_hpa (en realidad mmHg), variacion_hpa, tendencia
+    unidades: mmHg
+  cita_detalle: Ver README.md en la raíz del repositorio para la descripción de campos, unidades y limitaciones
+    por vista.
+distribucion:
+  restriccion_acceso: '3'
+  restriccion_uso: '3'
+  licencia: CC BY 4.0
+  responsabilidad: Los datos se proporcionan tal como son capturados, con las limitaciones descritas.
+    ESCOM-IPN no garantiza la continuidad del servicio.
+  formato:
+    nombre: CSV (Comma Separated Values)
+    version: RFC 4180
+informacion_metadatos:
+  nombre_norma: Norma Técnica para la Elaboración de Metadatos Geográficos (NTM)
+  version_norma: 2024 (2.0)
+  idioma: ES
+  punto_contacto:
+    organizacion: Escuela Superior de Cómputo - IPN
+    entidad_federativa: Ciudad de México
+    pais: México
+    enlace_en_linea: https://github.com/Estacion-metereologica
+    rol: '1'
+  fechas:
+  - tipo: '1'
+    fecha: '2026-05-15'
+  - tipo: '2'
+    fecha: '2026-10-26'
+  conjunto_caracteres: '5'
