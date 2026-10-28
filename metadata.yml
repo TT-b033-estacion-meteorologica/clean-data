@@ -37,13 +37,13 @@ identificacion:
   resolucion_temporal: 15 minutos
   extension_temporal:
     inicio: '2026-04-19'
-    fin: '2026-10-26'
+    fin: '2026-10-27'
 fechas:
   eventos:
   - tipo: '1'
     fecha: '2026-04-18'
   - tipo: '2'
-    fecha: '2026-10-27'
+    fecha: '2026-10-28'
   - tipo: '3'
     fecha: '2026-05-15'
 parte_responsable:
@@ -96,7 +96,7 @@ calidad:
         subcriterio: Consistencia de formato
         ambito: 'Conversión de tipos: VARCHAR a NUMERIC, DATE y TIME; sin duplicados de fecha-hora'
     descripcion: 'Los valores ''---'' se convierten a NULL y no se descartan registros. Del 2026-04-19
-      al 2026-10-26: 179 de 191 días con datos (93.7 %) y 16713 de 18336 registros esperados (91.1 %).
+      al 2026-10-27: 180 de 192 días con datos (93.8 %) y 16808 de 18432 registros esperados (91.2 %).
       Se esperan 96 registros por día; la mayoría de los días completos tiene 95 (ver limitaciones).'
   limitaciones_conocidas:
   - 'Presión barométrica no homogénea: hasta el 2 de julio de 2026 la consola reportó presión reducida
@@ -163,5 +163,5 @@ informacion_metadatos:
   - tipo: '1'
     fecha: '2026-05-15'
   - tipo: '2'
-    fecha: '2026-10-27'
+    fecha: '2026-10-28'
   conjunto_caracteres: '5'
