@@ -1,6 +1,6 @@
 # Datos Meteorológicos - Estación ESCOM IPN
 
-Registros meteorológicos automáticos capturados cada 15 minutos por la estación meteorológica Davis Vantage Vue
+Registros meteorológicos automáticos capturados cada 15 minutos por la estación meteorológica **Davis Vantage Vue**
 ubicada en ESCOM, IPN, Ciudad de México, y publicados diariamente.
 
 ## Información general
