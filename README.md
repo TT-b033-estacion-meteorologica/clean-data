@@ -1,6 +1,6 @@
 # Datos Meteorológicos - Estación ESCOM IPN
 
-Registros meteorológicos automáticos capturados cada 15 minutos por la estación
+Registros meteorológicos automáticos capturados cada 15 minutos por la estación Davis Vantage Vue
 ubicada en ESCOM, IPN, Ciudad de México, y publicados diariamente.
 
 ## Información general
@@ -51,13 +51,13 @@ clean_data/
 - Temperatura y humedad relativa se reportan sin decimales (resolución efectiva de 1 °C y 1 %).
 - El registro de las 00:00 h de cada día no se captura, por lo que la mayoría de los días completos tiene 95 registros en lugar de 96.
 - Hay días sin datos que ya no pueden recuperarse: 31 de mayo; 19, 23, 24 y 29 de junio; 3, 18 y 19 de julio; 11 de agosto, y 7, 15 y 16 de septiembre de 2026. Los días de la puesta en marcha (24 de abril al 2 de mayo de 2026) y algunos días aislados están incompletos.
-- Viento: cerca de dos tercios de los intervalos registran 0 km/h y alrededor de un tercio no tiene dirección (calma); el anemómetro podría estar resguardado, por lo que los datos reflejan la circulación local.
 - Radiación solar, índice UV y evapotranspiración no están disponibles (sensores no instalados) y no se incluyen en las vistas limpias.
-- Los valores atípicos no se marcan ni se eliminan en los datos publicados. En cada captura, el sistema revisa los registros nuevos (rangos físicos, saltos de presión y sensores sin lectura) y envía una alerta al equipo para revisarlos.
+
 
 ## Estándares aplicados
 
-- **NTM-INEGI 2024 (2.0)**: Norma Técnica para la Elaboración de Metadatos Geográficos.
+- **Lineamientos en materia de Datos Abiertos DOF: 11/09/2025**: características de los datos abierto (Open Data). 
+- **NTM-INEGI 2024 (2.0)**: Norma Técnica para la Elaboración de Metadatos Geográficos. 
 - **ISO 19115-1:2014**: estándar internacional en el que se basa la NTM.
 - **WIS 2.0 (OMM)**: recomendaciones para la publicación de datos meteorológicos.
 
