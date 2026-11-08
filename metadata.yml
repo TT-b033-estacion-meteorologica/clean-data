@@ -22,7 +22,7 @@ identificacion:
   - ESCOM
   forma_presentacion: '14'
   enlace_en_linea:
-    direccion: https://github.com/Estacion-metereologica/clean_data
+    direccion: https://github.com/TT-b033-estacion-meteorologica/clean-data
     descripcion_acceso: Repositorio GitHub con datos en formato CSV
   frecuencia_actualizacion: '1'
   conjunto_caracteres: '5'
@@ -70,7 +70,7 @@ sistema_referencia:
 calidad:
   linaje:
     enunciado: La estación meteorológica registra mediciones cada 15 minutos. Un proceso programado con
-      Cloud Scheduler extrae diariamente (≈12:00 h, hora de la Ciudad de México) los registros del día
+      Cloud Scheduler extrae diariamente (≈01:00 h, hora de la Ciudad de México) los registros del día
       previo y los almacena sin alteración en la tabla raw_weather_data de Cloud SQL (PostgreSQL). Un
       servicio de Cloud Run (≈13:00 h) consulta las vistas SQL de limpieza y temáticas y publica los resultados
       en este repositorio en CSV mensuales.
@@ -79,11 +79,13 @@ calidad:
     descripcion: '1. Extracción HTTP desde la consola de la estación. 2. Carga sin transformación en raw_weather_data
       (todos los campos como texto); la restricción de unicidad fecha-hora evita registros duplicados.
       3. Limpieza mediante la vista vw_clean_weather: valores ''---'' a NULL con NULLIF, conversión de
-      tipos (VARCHAR a NUMERIC, DATE y TIME) y fecha con TO_DATE(''DD:MM:YYYY''). 4. Separación temática
-      en vistas (temperatura y humedad, viento, lluvia y presión). 5. Exportación a CSV mensual en GitHub.'
+      tipos (VARCHAR a NUMERIC, DATE y TIME) y fecha con TO_DATE(''DD:MM:YYYY''). 4. Corrección de la
+      presión en los periodos registrados en la tabla ajustes_barometro (columna bar_ajuste_mmhg). 5.
+      Separación temática en vistas (temperatura y humedad, viento, lluvia y presión). 6. Exportación
+      a CSV mensual en GitHub.'
     tecnologia:
       hardware: Google Cloud Run (contenedor on-demand)
-      software: PostgreSQL 14, Python 3.11, Flask, pandas
+      software: PostgreSQL 15, Python 3.11, Flask, pandas
     fuentes:
     - Estación meteorológica Davis Vantage Vue (consola con acceso HTTP)
     - Cloud SQL PostgreSQL - Google Cloud Platform
@@ -99,25 +101,27 @@ calidad:
       al 2026-11-06: 190 de 202 días con datos (94.1 %) y 17755 de 19392 registros esperados (91.6 %).
       Se esperan 96 registros por día; la mayoría de los días completos tiene 95 (ver limitaciones).'
   limitaciones_conocidas:
-  - 'Presión barométrica no homogénea: hasta el 2 de julio de 2026 la consola reportó presión reducida
-    al nivel del mar (≈762–774 mmHg) y desde el 4 de julio presión absoluta de la estación (≈572–582 mmHg);
-    el 3 de julio no hay datos. No se ha aplicado ninguna corrección: analizar los dos periodos por separado.'
+  - 'Presión barométrica: del 3 de julio al 20 de octubre de 2026 la consola tuvo una calibración errónea
+    del barómetro (BARCAL) y reportó la presión 192.1 mmHg por debajo de su valor (≈572–582 mmHg). En
+    clean_weather y clean_presion ese periodo ya está corregido: la columna bar_ajuste_mmhg (ajuste_mmhg
+    en clean_presion) indica el ajuste sumado a cada registro. El repositorio raw-data conserva las lecturas
+    originales de la consola.'
   - La columna presion_hpa (y variacion_hpa) está en mmHg, la unidad configurada en la consola, no en
     hPa.
   - Temperatura y humedad relativa se reportan sin decimales (resolución efectiva de 1 °C y 1 %).
   - El registro de las 00:00 h de cada día no se captura, por lo que la mayoría de los días completos
     tiene 95 registros en lugar de 96.
-  - 'Hay días sin datos o incompletos: la puesta en marcha (24 de abril al 2 de mayo de 2026) y los días
-    7, 15 y 16 de septiembre de 2026, que no pudieron recuperarse.'
-  - 'Viento: el 65 % de los intervalos registra 0 km/h y el 31 % no tiene dirección (calma); el anemómetro
-    podría estar resguardado, por lo que los datos reflejan la circulación local.'
-  - 'Dirección del viento: en parte de los registros las columnas direccion y direccion_rafaga están intercambiadas
-    (error de ingesta identificado y pendiente de corrección).'
+  - 'Hay días sin datos que ya no pueden recuperarse: 31 de mayo; 19, 23, 24 y 29 de junio; 3, 18 y 19
+    de julio; 11 de agosto, y 7, 15 y 16 de septiembre de 2026. Los días de la puesta en marcha (24 de
+    abril al 2 de mayo de 2026) y algunos días aislados están incompletos.'
+  - 'Viento: cerca de dos tercios de los intervalos registran 0 km/h y alrededor de un tercio no tiene
+    dirección (calma); el anemómetro podría estar resguardado, por lo que los datos reflejan la circulación
+    local.'
   - Radiación solar, índice UV y evapotranspiración no están disponibles (sensores no instalados) y no
     se incluyen en las vistas limpias.
-  - Aún no se aplica en la base de datos la verificación de rangos físicos ni el marcado de valores atípicos;
-    una verificación externa al 18 de octubre de 2026 no encontró valores fuera de rango en temperatura,
-    humedad, precipitación ni viento.
+  - Los valores atípicos no se marcan ni se eliminan en los datos publicados. En cada captura, el sistema
+    revisa los registros nuevos (rangos físicos, saltos de presión y sensores sin lectura) y envía una
+    alerta al equipo para revisarlos.
 entidades_atributos:
   descripcion_general: '5 vistas temáticas en CSV mensual. Cada registro es una medición de 15 minutos.
     Unidades: temperatura en °C, humedad relativa en %, presión en mmHg, velocidad del viento en km/h,
@@ -157,7 +161,7 @@ informacion_metadatos:
     organizacion: Escuela Superior de Cómputo - IPN
     entidad_federativa: Ciudad de México
     pais: México
-    enlace_en_linea: https://github.com/Estacion-metereologica
+    enlace_en_linea: https://github.com/TT-b033-estacion-meteorologica
     rol: '1'
   fechas:
   - tipo: '1'
