@@ -46,15 +46,14 @@ clean_data/
 
 ## Limitaciones conocidas
 
-- Presión barométrica no homogénea: hasta el 2 de julio de 2026 la consola reportó presión reducida al nivel del mar (≈762–774 mmHg) y desde el 4 de julio presión absoluta de la estación (≈572–582 mmHg); el 3 de julio no hay datos. No se ha aplicado ninguna corrección: analizar los dos periodos por separado.
+- Presión barométrica: del 3 de julio al 20 de octubre de 2026 la consola tuvo una calibración errónea del barómetro (BARCAL) y reportó la presión 192.1 mmHg por debajo de su valor (≈572–582 mmHg). En clean_weather y clean_presion ese periodo ya está corregido: la columna bar_ajuste_mmhg (ajuste_mmhg en clean_presion) indica el ajuste sumado a cada registro. El repositorio raw-data conserva las lecturas originales de la consola.
 - La columna presion_hpa (y variacion_hpa) está en mmHg, la unidad configurada en la consola, no en hPa.
 - Temperatura y humedad relativa se reportan sin decimales (resolución efectiva de 1 °C y 1 %).
 - El registro de las 00:00 h de cada día no se captura, por lo que la mayoría de los días completos tiene 95 registros en lugar de 96.
-- Hay días sin datos o incompletos: la puesta en marcha (24 de abril al 2 de mayo de 2026) y los días 7, 15 y 16 de septiembre de 2026, que no pudieron recuperarse.
-- Viento: el 65 % de los intervalos registra 0 km/h y el 31 % no tiene dirección (calma); el anemómetro podría estar resguardado, por lo que los datos reflejan la circulación local.
-- Dirección del viento: en parte de los registros las columnas direccion y direccion_rafaga están intercambiadas (error de ingesta identificado y pendiente de corrección).
+- Hay días sin datos que ya no pueden recuperarse: 31 de mayo; 19, 23, 24 y 29 de junio; 3, 18 y 19 de julio; 11 de agosto, y 7, 15 y 16 de septiembre de 2026. Los días de la puesta en marcha (24 de abril al 2 de mayo de 2026) y algunos días aislados están incompletos.
+- Viento: cerca de dos tercios de los intervalos registran 0 km/h y alrededor de un tercio no tiene dirección (calma); el anemómetro podría estar resguardado, por lo que los datos reflejan la circulación local.
 - Radiación solar, índice UV y evapotranspiración no están disponibles (sensores no instalados) y no se incluyen en las vistas limpias.
-- Aún no se aplica en la base de datos la verificación de rangos físicos ni el marcado de valores atípicos; una verificación externa al 18 de octubre de 2026 no encontró valores fuera de rango en temperatura, humedad, precipitación ni viento.
+- Los valores atípicos no se marcan ni se eliminan en los datos publicados. En cada captura, el sistema revisa los registros nuevos (rangos físicos, saltos de presión y sensores sin lectura) y envía una alerta al equipo para revisarlos.
 
 ## Estándares aplicados
 
@@ -67,4 +66,4 @@ clean_data/
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.es): puedes usar,
 compartir y adaptar estos datos citando la fuente:
 
-> Estación Meteorológica ESCOM IPN - https://github.com/Estacion-metereologica
+> Estación Meteorológica ESCOM IPN - https://github.com/TT-b033-estacion-meteorologica
