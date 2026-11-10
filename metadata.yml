@@ -2,9 +2,8 @@ identificacion:
   titulo: Datos Meteorológicos - Estación ESCOM IPN
   proposito: Proporcionar datos meteorológicos abiertos capturados por la estación automática del campus
     ESCOM del IPN, para su uso en investigación, educación y proyectos de Open Data.
-  descripcion: Registros meteorológicos automáticos de temperatura, humedad, presión barométrica, viento
-    y precipitación, capturados cada 15 minutos por una estación Davis Vantage Vue y publicados diariamente
-    en formato CSV (un archivo mensual por vista temática).
+  descripcion: Registros meteorológicos automáticos capturados cada 15 minutos por la estación meteorológica
+    Davis Vantage Vue ubicada en ESCOM, IPN, Ciudad de México, y publicados diariamente.
   idioma: ES
   categoria_tema:
     tema_principal: '3'
@@ -70,7 +69,7 @@ sistema_referencia:
 calidad:
   linaje:
     enunciado: La estación meteorológica registra mediciones cada 15 minutos. Un proceso programado con
-      Cloud Scheduler extrae diariamente (≈01:00 h, hora de la Ciudad de México) los registros del día
+      Cloud Scheduler extrae diariamente (≈12:00 h, hora de la Ciudad de México) los registros del día
       previo y los almacena sin alteración en la tabla raw_weather_data de Cloud SQL (PostgreSQL). Un
       servicio de Cloud Run (≈13:00 h) consulta las vistas SQL de limpieza y temáticas y publica los resultados
       en este repositorio en CSV mensuales.
@@ -80,12 +79,13 @@ calidad:
       (todos los campos como texto); la restricción de unicidad fecha-hora evita registros duplicados.
       3. Limpieza mediante la vista vw_clean_weather: valores ''---'' a NULL con NULLIF, conversión de
       tipos (VARCHAR a NUMERIC, DATE y TIME) y fecha con TO_DATE(''DD:MM:YYYY''). 4. Corrección de la
-      presión en los periodos registrados en la tabla ajustes_barometro (columna bar_ajuste_mmhg). 5.
-      Separación temática en vistas (temperatura y humedad, viento, lluvia y presión). 6. Exportación
+      presión barométrica con la tabla ajustes_barometro (+192.1 mmHg entre el 3 de julio de 2026 a las
+      00:00 h y el 20 de octubre de 2026 a las 09:15 h); las lecturas originales se conservan en RAW.
+      5. Separación temática en vistas (temperatura y humedad, viento, lluvia y presión). 6. Exportación
       a CSV mensual en GitHub.'
     tecnologia:
       hardware: Google Cloud Run (contenedor on-demand)
-      software: PostgreSQL 15, Python 3.11, Flask, pandas
+      software: PostgreSQL 14, Python 3.11, Flask, pandas
     fuentes:
     - Estación meteorológica Davis Vantage Vue (consola con acceso HTTP)
     - Cloud SQL PostgreSQL - Google Cloud Platform
@@ -97,53 +97,49 @@ calidad:
       consistencia_logica:
         subcriterio: Consistencia de formato
         ambito: 'Conversión de tipos: VARCHAR a NUMERIC, DATE y TIME; sin duplicados de fecha-hora'
+      exactitud_tematica:
+        subcriterio: Exactitud de atributos cuantitativos
+        ambito: 'Presión barométrica: ajuste constante documentado en bar_ajuste_mmhg'
     descripcion: 'Los valores ''---'' se convierten a NULL y no se descartan registros. Del 2026-04-19
       al 2026-11-08: 192 de 204 días con datos (94.1 %) y 17947 de 19584 registros esperados (91.6 %).
       Se esperan 96 registros por día; la mayoría de los días completos tiene 95 (ver limitaciones).'
   limitaciones_conocidas:
-  - 'Presión barométrica: del 3 de julio al 20 de octubre de 2026 la consola tuvo una calibración errónea
-    del barómetro (BARCAL) y reportó la presión 192.1 mmHg por debajo de su valor (≈572–582 mmHg). En
-    clean_weather y clean_presion ese periodo ya está corregido: la columna bar_ajuste_mmhg (ajuste_mmhg
-    en clean_presion) indica el ajuste sumado a cada registro. El repositorio raw-data conserva las lecturas
-    originales de la consola.'
-  - La columna presion_hpa (y variacion_hpa) está en mmHg, la unidad configurada en la consola, no en
-    hPa.
+  - 'Presión barométrica corregida: por una configuración incorrecta del barómetro hubo una discontinuidad
+    desde el 3 de julio de 2026. En CLEAN se aplicó un ajuste constante de +192.1 mmHg entre el 3 de julio
+    de 2026 a las 00:00 h y el 20 de octubre de 2026 a las 09:15 h; el valor aplicado se publica en bar_ajuste_mmhg
+    y las lecturas originales se conservan sin modificar en la capa RAW.'
+  - La presión se expresa en mmHg, la unidad configurada en la consola; no está en hPa.
   - Temperatura y humedad relativa se reportan sin decimales (resolución efectiva de 1 °C y 1 %).
   - El registro de las 00:00 h de cada día no se captura, por lo que la mayoría de los días completos
     tiene 95 registros en lugar de 96.
-  - 'Hay días sin datos que ya no pueden recuperarse: 31 de mayo; 19, 23, 24 y 29 de junio; 3, 18 y 19
-    de julio; 11 de agosto, y 7, 15 y 16 de septiembre de 2026. Los días de la puesta en marcha (24 de
-    abril al 2 de mayo de 2026) y algunos días aislados están incompletos.'
-  - 'Viento: cerca de dos tercios de los intervalos registran 0 km/h y alrededor de un tercio no tiene
-    dirección (calma); el anemómetro podría estar resguardado, por lo que los datos reflejan la circulación
-    local.'
+  - 'Hay días sin datos o incompletos: la puesta en marcha (24 de abril al 2 de mayo de 2026) y los días
+    7, 15 y 16 de septiembre de 2026, que no pudieron recuperarse.'
+  - 'Viento: el 65 % de los intervalos registra 0 km/h y el 31 % no tiene dirección (calma).'
   - Radiación solar, índice UV y evapotranspiración no están disponibles (sensores no instalados) y no
     se incluyen en las vistas limpias.
-  - Los valores atípicos no se marcan ni se eliminan en los datos publicados. En cada captura, el sistema
-    revisa los registros nuevos (rangos físicos, saltos de presión y sensores sin lectura) y envía una
-    alerta al equipo para revisarlos.
 entidades_atributos:
   descripcion_general: '5 vistas temáticas en CSV mensual. Cada registro es una medición de 15 minutos.
     Unidades: temperatura en °C, humedad relativa en %, presión en mmHg, velocidad del viento en km/h,
     precipitación en mm y tasa de precipitación en mm/h.'
   entidades:
   - archivo: AAAA/MM/clean_weather_AAAAMM.csv
-    variables: Todas las variables limpias
+    variables: id, fecha, hora, temp_out, hi_temp, low_temp, in_temp, in_hum_pct, out_hum_pct, rain, rain_rate,
+      bar, wind_speed, hi_speed, hi_dir, wind_dir, temp_units, bar_units, wind_units, rain_units, bar_ajuste_mmhg
     unidades: Varias
   - archivo: AAAA/MM/clean_temperatura_AAAAMM.csv
-    variables: temp_exterior, temp_max, temp_min, temp_interior, humedad_exterior, humedad_interior
+    variables: id, fecha, hora, temp_out, hi_temp, low_temp, in_temp, out_hum_pct, in_hum_pct
     unidades: °C, %
   - archivo: AAAA/MM/clean_viento_AAAAMM.csv
-    variables: velocidad_kmh, rafaga_kmh, direccion, direccion_rafaga
-    unidades: km/h
+    variables: id, fecha, hora, wind_speed, hi_speed, wind_dir, hi_dir
+    unidades: km/h, cardinal
   - archivo: AAAA/MM/clean_lluvia_AAAAMM.csv
-    variables: lluvia_mm, tasa_mm_hr
+    variables: id, fecha, hora, rain, rain_rate
     unidades: mm, mm/h
   - archivo: AAAA/MM/clean_presion_AAAAMM.csv
-    variables: presion_hpa (en realidad mmHg), variacion_hpa, tendencia
+    variables: id, fecha, hora, bar, bar_ajuste_mmhg, bar_variation_mmhg, bar_trend
     unidades: mmHg
-  cita_detalle: Ver README.md en la raíz del repositorio para la descripción de campos, unidades y limitaciones
-    por vista.
+  cita_detalle: Ver README.md en la raíz del repositorio para el diccionario de datos, la metodología
+    de limpieza y las limitaciones por vista.
 distribucion:
   restriccion_acceso: '3'
   restriccion_uso: '3'
