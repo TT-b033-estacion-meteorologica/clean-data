@@ -73,17 +73,17 @@ Los datos limpios se distribuyen en 5 archivos CSV mensuales. Cada archivo conti
 | Archivo | Variables |
 |---|---|
 | `clean_weather_AAAAMM.csv` | `id`, `fecha`, `hora`, `temp_out`, `hi_temp`, `low_temp`, `in_temp`, `in_hum_pct`, `out_hum_pct`, `rain`, `rain_rate`, `bar`, `wind_speed`, `hi_speed`, `hi_dir`, `wind_dir`, `temp_units`, `bar_units`, `wind_units`, `rain_units`, `bar_ajuste_mmhg` |
-| `clean_temperatura_AAAAMM.csv` | `id`, `fecha`, `hora`, `temp_out`, `hi_temp`, `low_temp`, `in_temp`, `out_hum_pct`, `in_hum_pct` |
-| `clean_viento_AAAAMM.csv` | `id`, `fecha`, `hora`, `wind_speed`, `hi_speed`, `wind_dir`, `hi_dir` |
-| `clean_lluvia_AAAAMM.csv` | `id`, `fecha`, `hora`, `rain`, `rain_rate` |
-| `clean_presion_AAAAMM.csv` | `id`, `fecha`, `hora`, `bar`, `bar_ajuste_mmhg`, `bar_variation_mmhg`, `bar_trend` |
+| `clean_temperatura_AAAAMM.csv` | `id`, `fecha`, `hora`, `temp_exterior`, `temp_max`, `temp_min`, `temp_interior`, `humedad_exterior`, `humedad_interior` |
+| `clean_viento_AAAAMM.csv` | `id`, `fecha`, `hora`, `velocidad_kmh`, `rafaga_kmh`, `direccion`, `direccion_rafaga` |
+| `clean_lluvia_AAAAMM.csv` | `id`, `fecha`, `hora`, `lluvia_mm`, `tasa_mm_hr` |
+| `clean_presion_AAAAMM.csv` | `id`, `fecha`, `hora`, `presion_hpa`, `variacion_hpa`, `tendencia`, `ajuste_mmhg` |
 
 **Consideraciones sobre las variables:**
 
 - `AAAAMM` representa el año y mes del conjunto de datos. Por ejemplo, `202611` corresponde a noviembre de 2026.
 - Los archivos mensuales acumulan los registros disponibles del mes y se actualizan diariamente.
-- Las variables de presión se expresan en mmHg. No deben interpretarse como hPa, aunque versiones anteriores de la aplicación hayan utilizado nombres que contienen esa unidad.
-- `bar_variation_mmhg` representa la variación de presión respecto al registro anterior y `bar_trend` clasifica su comportamiento.
+- Las variables de presión se expresan en mmHg. No deben interpretarse como hPa, aunque en `clean_presion` las columnas se llamen `presion_hpa` y `variacion_hpa`.
+- En `clean_presion`, `variacion_hpa` representa la variación de presión que reporta la consola y `tendencia` clasifica su comportamiento (`Creciente`, `Descendente` o `Estable`); `ajuste_mmhg` es el ajuste barométrico aplicado al registro.
 
 ## Ejemplo de consumo del repositorio
 
@@ -202,7 +202,7 @@ El procedimiento consiste en:
 
 - Conservar las lecturas originales sin modificarlas en la capa RAW.
 - Aplicar un ajuste de **+192.1 mmHg** a los registros comprendidos entre el 3 de julio de 2026 a las 00:00 h y el 20 de octubre de 2026 a las 09:15 h.
-- Incorporar el ajuste aplicado en la columna `bar_ajuste_mmhg`.
+- Incorporar el ajuste aplicado en la columna `bar_ajuste_mmhg` (`clean_weather`) y `ajuste_mmhg` (`clean_presion`).
 - Utilizar la presión corregida para generar los datos publicados en CLEAN.
 - Recalcular la variación y tendencia barométrica para evitar que la corrección genere un cambio artificial en la serie temporal.
 
@@ -234,13 +234,14 @@ De esta manera, los archivos CLEAN mantienen un histórico mensual acumulado y e
 
 ## Limitaciones conocidas
 
-- Presión barométrica corregida: por una configuración incorrecta del barómetro hubo una discontinuidad desde el 3 de julio de 2026. En CLEAN se aplicó un ajuste constante de +192.1 mmHg entre el 3 de julio de 2026 a las 00:00 h y el 20 de octubre de 2026 a las 09:15 h; el valor aplicado se publica en bar_ajuste_mmhg y las lecturas originales se conservan sin modificar en la capa RAW.
-- La presión se expresa en mmHg, la unidad configurada en la consola; no está en hPa.
+- Presión barométrica corregida: por una configuración incorrecta del barómetro (BARCAL) hubo una discontinuidad desde el 3 de julio de 2026. En CLEAN se aplicó un ajuste constante de +192.1 mmHg entre el 3 de julio de 2026 a las 00:00 h y el 20 de octubre de 2026 a las 09:15 h; el valor aplicado se publica en bar_ajuste_mmhg (clean_weather) y ajuste_mmhg (clean_presion), y las lecturas originales se conservan sin modificar en el repositorio raw-data.
+- La presión se expresa en mmHg, la unidad configurada en la consola. En clean_presion las columnas presion_hpa y variacion_hpa también están en mmHg, no en hPa.
 - Temperatura y humedad relativa se reportan sin decimales (resolución efectiva de 1 °C y 1 %).
 - El registro de las 00:00 h de cada día no se captura, por lo que la mayoría de los días completos tiene 95 registros en lugar de 96.
-- Hay días sin datos o incompletos: la puesta en marcha (24 de abril al 2 de mayo de 2026) y los días 7, 15 y 16 de septiembre de 2026, que no pudieron recuperarse.
-- Viento: el 65 % de los intervalos registra 0 km/h y el 31 % no tiene dirección (calma).
+- Hay días sin datos que ya no pueden recuperarse: 31 de mayo; 19, 23, 24 y 29 de junio; 3, 18 y 19 de julio; 11 de agosto, y 7, 15 y 16 de septiembre de 2026. Los días de la puesta en marcha (24 de abril al 2 de mayo de 2026) y algunos días aislados están incompletos.
+- Viento: cerca de dos tercios de los intervalos registran 0 km/h y alrededor de un tercio no tiene dirección (calma); el anemómetro podría estar resguardado, por lo que los datos reflejan la circulación local.
 - Radiación solar, índice UV y evapotranspiración no están disponibles (sensores no instalados) y no se incluyen en las vistas limpias.
+- Los valores atípicos no se marcan ni se eliminan en los datos publicados. En cada captura, el sistema revisa los registros nuevos (rangos físicos, saltos de presión y sensores sin lectura) y envía una alerta al equipo para revisarlos.
 
 ## Estándares aplicados
 
