@@ -36,13 +36,13 @@ identificacion:
   resolucion_temporal: 15 minutos
   extension_temporal:
     inicio: '2026-04-19'
-    fin: '2026-11-15'
+    fin: '2026-11-16'
 fechas:
   eventos:
   - tipo: '1'
     fecha: '2026-04-18'
   - tipo: '2'
-    fecha: '2026-11-16'
+    fecha: '2026-11-17'
   - tipo: '3'
     fecha: '2026-05-15'
 parte_responsable:
@@ -101,7 +101,7 @@ calidad:
         subcriterio: Exactitud de atributos cuantitativos
         ambito: 'Presión barométrica: ajuste constante documentado en bar_ajuste_mmhg y ajuste_mmhg'
     descripcion: 'Los valores ''---'' se convierten a NULL y no se descartan registros. Del 2026-04-19
-      al 2026-11-15: 199 de 211 días con datos (94.3 %) y 18615 de 20256 registros esperados (91.9 %).
+      al 2026-11-16: 200 de 212 días con datos (94.3 %) y 18710 de 20352 registros esperados (91.9 %).
       Se esperan 96 registros por día; la mayoría de los días completos tiene 95 (ver limitaciones).'
   limitaciones_conocidas:
   - 'Presión barométrica corregida: por una configuración incorrecta del barómetro (BARCAL) hubo una discontinuidad
@@ -171,5 +171,5 @@ informacion_metadatos:
   - tipo: '1'
     fecha: '2026-05-15'
   - tipo: '2'
-    fecha: '2026-11-16'
+    fecha: '2026-11-17'
   conjunto_caracteres: '5'
