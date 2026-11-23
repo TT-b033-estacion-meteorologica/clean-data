@@ -13,13 +13,13 @@ ubicada en ESCOM, IPN, Ciudad de México, y publicados diariamente.
 | Resolución temporal | cada 15 minutos |
 | Registros esperados por día | 96 (la mayoría de los días completos tiene 95) |
 | Datos disponibles desde | 2026-04-19 |
-| Última actualización | 2026-11-22 |
+| Última actualización | 2026-11-23 |
 | Licencia | CC BY 4.0 |
 | Norma de metadatos | NTM-INEGI 2024 (2.0) |
 
 ## Completitud de los datos
 
-Del 2026-04-19 al 2026-11-21: 205 de 217 días con datos (94.5 %) y 19185 de 20832 registros esperados (92.1 %).
+Del 2026-04-19 al 2026-11-22: 206 de 218 días con datos (94.5 %) y 19280 de 20928 registros esperados (92.1 %).
 
 ## Estructura del repositorio
 
